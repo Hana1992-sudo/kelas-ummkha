@@ -1,787 +1,281 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Kelas UmmKha</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-*{
-  box-sizing:border-box;
-}
-
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#f7f3fb;
-  color:#302b38;
-}
-
-.wrap{
-  max-width:850px;
-  margin:auto;
-  padding:20px;
-}
-
-.card{
-  background:white;
-  border-radius:20px;
-  padding:22px;
-  margin-bottom:18px;
-  box-shadow:0 5px 20px rgba(80,50,100,.08);
-}
-
-h1,h2,h3{
-  margin-top:0;
-}
-
-.logo{
-  text-align:center;
-  font-size:30px;
-  font-weight:bold;
-  color:#76519a;
-  margin-bottom:8px;
-}
-
-.sub{
-  text-align:center;
-  color:#777;
-  margin-bottom:25px;
-}
-
-input{
-  width:100%;
-  padding:14px;
-  margin-bottom:12px;
-  border:1px solid #ddd;
-  border-radius:12px;
-  font-size:16px;
-}
-
-button{
-  width:100%;
-  padding:14px;
-  border:0;
-  border-radius:12px;
-  background:#76519a;
-  color:white;
-  font-size:16px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-button:hover{
-  opacity:.9;
-}
-
-.logout{
-  width:auto;
-  padding:10px 18px;
-  background:#eee5f5;
-  color:#76519a;
-  float:right;
-}
-
-.error{
-  background:#fff0f0;
-  color:#b42318;
-  padding:12px;
-  border-radius:10px;
-  margin-bottom:15px;
-  display:none;
-}
-
-.success{
-  background:#f0fff5;
-  color:#18794e;
-  padding:12px;
-  border-radius:10px;
-  margin-bottom:15px;
-  display:none;
-}
-
-.hidden{
-  display:none!important;
-}
-
-.header{
-  overflow:hidden;
-  margin-bottom:20px;
-}
-
-.badge{
-  display:inline-block;
-  padding:7px 12px;
-  border-radius:20px;
-  font-size:13px;
-  font-weight:bold;
-  margin-bottom:12px;
-}
-
-.published{
-  background:#eee5f8;
-  color:#76519a;
-}
-
-.coming{
-  background:#fff4d8;
-  color:#996b00;
-}
-
-.material{
-  margin-top:18px;
-  padding-top:18px;
-  border-top:1px solid #eee;
-}
-
-.video{
-  position:relative;
-  width:100%;
-  padding-bottom:56.25%;
-  margin:15px 0;
-  border-radius:15px;
-  overflow:hidden;
-  background:#eee;
-}
-
-.video iframe{
-  position:absolute;
-  width:100%;
-  height:100%;
-  left:0;
-  top:0;
-  border:0;
-}
-
-.task{
-  background:#faf7fd;
-  border-left:4px solid #76519a;
-  padding:15px;
-  border-radius:10px;
-  margin-top:15px;
-}
-
-.link{
-  display:inline-block;
-  margin-top:12px;
-  padding:11px 15px;
-  border-radius:10px;
-  background:#76519a;
-  color:white;
-  text-decoration:none;
-  font-weight:bold;
-}
-
-.empty{
-  text-align:center;
-  color:#777;
-  padding:30px 10px;
-}
-
-.loading{
-  text-align:center;
-  padding:30px;
-  color:#777;
-}
-
-.small{
-  color:#777;
-  font-size:14px;
-}
+body{margin:0;font-family:Arial;background:#f7f3fb;color:#302b38}
+.wrap{max-width:850px;margin:auto;padding:20px}
+.card{background:white;padding:20px;border-radius:18px;margin:15px 0;box-shadow:0 4px 18px #0001}
+input,button{width:100%;box-sizing:border-box;padding:13px;margin:6px 0;border-radius:10px;border:1px solid #ddd}
+button{background:#76519a;color:white;border:0;font-weight:bold}
+.secondary{background:#eee5f5;color:#76519a}
+.hidden{display:none}
+.error{background:#fff0f0;color:#b42318;padding:10px;border-radius:10px;margin:8px 0}
+.success{background:#effbf3;color:#18794e;padding:10px;border-radius:10px;margin:8px 0}
+.material{border-top:1px solid #eee;padding-top:18px;margin-top:18px}
+.badge{display:inline-block;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:bold;background:#eee5f8;color:#76519a}
+.soon{background:#fff1d0;color:#996b00}
+.video{position:relative;padding-bottom:56.25%;margin:12px 0}
+.video iframe{position:absolute;width:100%;height:100%;border:0;border-radius:12px}
+.task{background:#faf7fd;border-left:4px solid #76519a;padding:14px;margin-top:12px;border-radius:8px}
+.small{color:#777;font-size:14px;line-height:1.6}
 </style>
 </head>
 
 <body>
-
 <div class="wrap">
 
-  <!-- LOGIN -->
-  <section id="loginPage" class="card">
-    <div class="logo">🌷 Kelas UmmKha</div>
+<section id="login" class="card">
+<h1>🌷 Kelas UmmKha</h1>
+<p class="small">Silakan masuk menggunakan akun peserta.</p>
+<input id="email" type="email" placeholder="Email peserta">
+<input id="password" type="password" placeholder="Password">
+<button onclick="login()">MASUK</button>
+<div id="loginMsg"></div>
+</section>
 
-    <div class="sub">
-      Silakan masuk menggunakan akun peserta.
-    </div>
+<div id="app" class="hidden">
 
-    <div id="loginError" class="error"></div>
+<section class="card">
+<h1>🌷 Kelas UmmKha</h1>
+<p id="welcome" class="small"></p>
+<button onclick="akun()">👤 Akun Saya</button>
+<button class="secondary" onclick="logout()">KELUAR</button>
+</section>
 
-    <input
-      type="email"
-      id="email"
-      placeholder="Email peserta"
-      autocomplete="email"
-    >
+<section id="akunBox" class="card hidden">
+<h2>👤 Akun Saya</h2>
+<p id="akunNama" class="small"></p>
 
-    <input
-      type="password"
-      id="password"
-      placeholder="Password"
-      autocomplete="current-password"
-    >
+<label>Email</label>
+<input id="newEmail" type="email" placeholder="Email baru">
+<button onclick="ubahEmail()">UBAH EMAIL</button>
+<div id="emailMsg"></div>
 
-    <button id="loginButton" type="button">
-      Masuk
-    </button>
+<hr>
 
-    <p class="small" style="text-align:center;margin-top:18px;">
-      Akun peserta diberikan oleh admin Kelas UmmKha.
-    </p>
-  </section>
+<h3>🔐 Ganti Password</h3>
+<input id="newPass" type="password" placeholder="Password baru">
+<input id="newPass2" type="password" placeholder="Ulangi password baru">
+<button onclick="ubahPassword()">GANTI PASSWORD</button>
+<div id="passMsg"></div>
 
+<button class="secondary" onclick="akun()">TUTUP</button>
+</section>
 
-  <!-- DASHBOARD -->
-  <section id="dashboard" class="hidden">
-
-    <div class="card header">
-      <button id="logoutButton" class="logout" type="button">
-        Keluar
-      </button>
-
-      <h1>🌷 Kelas UmmKha</h1>
-      <div id="welcomeText" class="small">
-        Selamat belajar!
-      </div>
-    </div>
-
-    <div id="dashboardError" class="error"></div>
-
-    <div class="card">
-      <h2>📚 Materi Kelas</h2>
-      <p class="small">
-        Pelajari materi sesuai urutan. Materi yang belum tersedia akan
-        ditandai sebagai “Segera Hadir”.
-      </p>
-
-      <div id="materials">
-        <div class="loading">
-          Memuat materi...
-        </div>
-      </div>
-    </div>
-
-  </section>
+<section class="card">
+<h2>📚 Materi Kelas</h2>
+<div id="materials">Memuat materi...</div>
+</section>
 
 </div>
-
+</div>
 
 <script>
+const db=supabase.createClient(
+"https://sngesuutjswqsgqciogi.supabase.co",
+"sb_publishable_L8MDEGxyBOsyx_LM9GOvaw_AWVP1GuE"
+);
 
-const SUPABASE_URL =
-  "https://sngesuutjswqsgqciogi.supabase.co";
+let profile=null;
 
-const SUPABASE_KEY =
-  "sb_publishable_L8MDEGxyBOsyx_LM9GOvaw_AWVP1GuE";
+const $=id=>document.getElementById(id);
 
-const supabaseClient =
-  window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
-
-
-const loginPage =
-  document.getElementById("loginPage");
-
-const dashboard =
-  document.getElementById("dashboard");
-
-const loginButton =
-  document.getElementById("loginButton");
-
-const logoutButton =
-  document.getElementById("logoutButton");
-
-const loginError =
-  document.getElementById("loginError");
-
-const dashboardError =
-  document.getElementById("dashboardError");
-
-const materials =
-  document.getElementById("materials");
-
-const welcomeText =
-  document.getElementById("welcomeText");
-
-
-function showLoginError(message){
-
-  loginError.textContent = message;
-  loginError.style.display = "block";
-
+function msg(id,text,type="error"){
+ $(id).innerHTML='<div class="'+type+'">'+text+'</div>';
 }
 
-
-function hideLoginError(){
-
-  loginError.style.display = "none";
-
+function esc(x){
+ return String(x||"").replace(/[&<>"']/g,c=>({
+ "&":"&amp;","<":"&lt;",">":"&gt;",
+ '"':"&quot;","'":"&#039;"
+ }[c]));
 }
 
-
-function showDashboardError(message){
-
-  dashboardError.textContent = message;
-  dashboardError.style.display = "block";
-
+function video(url){
+ if(!url)return"";
+ try{
+  const u=new URL(url);
+  let id=u.hostname.includes("youtu.be")
+   ?u.pathname.slice(1)
+   :u.searchParams.get("v");
+  if(!id&&url.includes("/embed/"))
+   id=url.split("/embed/")[1].split("?")[0];
+  if(!id)return"";
+  return '<div class="video"><iframe src="https://www.youtube.com/embed/'+
+   esc(id)+'" allowfullscreen></iframe></div>';
+ }catch(e){return""}
 }
-
-
-function youtubeEmbed(url){
-
-  if(!url) return "";
-
-  try{
-
-    let videoId = "";
-
-    const parsed = new URL(url);
-
-    if(parsed.hostname.includes("youtu.be")){
-
-      videoId = parsed.pathname.replace("/","");
-
-    }else{
-
-      videoId = parsed.searchParams.get("v") || "";
-
-    }
-
-    if(!videoId && url.includes("/embed/")){
-
-      videoId =
-        url.split("/embed/")[1].split("?")[0];
-
-    }
-
-    if(!videoId) return "";
-
-    return `
-      <div class="video">
-        <iframe
-          src="https://www.youtube.com/embed/${videoId}"
-          title="Video Materi"
-          allowfullscreen>
-        </iframe>
-      </div>
-    `;
-
-  }catch(e){
-
-    return "";
-
-  }
-
-}
-
-
-function escapeHTML(value){
-
-  if(value === null || value === undefined){
-    return "";
-  }
-
-  return String(value)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
-
-}
-
-
-function formatText(value){
-
-  if(!value) return "";
-
-  return escapeHTML(value)
-    .replace(/\n/g,"<br>");
-
-}
-
 
 async function login(){
+ $("loginMsg").textContent="Memproses...";
 
-  hideLoginError();
+ const r=await db.auth.signInWithPassword({
+  email:$("email").value.trim(),
+  password:$("password").value
+ });
 
-  const email =
-    document.getElementById("email").value.trim();
+ if(r.error){
+  msg("loginMsg","Email atau password salah.");
+  return;
+ }
 
-  const password =
-    document.getElementById("password").value;
+ const p=await db.from("profiles")
+  .select("id,nama,role")
+  .eq("id",r.data.user.id)
+  .maybeSingle();
 
-  if(!email || !password){
+ if(p.error||!p.data){
+  await db.auth.signOut();
+  msg("loginMsg","Profil peserta belum ditemukan.");
+  return;
+ }
 
-    showLoginError(
-      "Silakan isi email dan password terlebih dahulu."
-    );
+ if(p.data.role!=="peserta"){
+  await db.auth.signOut();
+  msg("loginMsg","Akun ini bukan akun peserta.");
+  return;
+ }
 
-    return;
-  }
-
-  loginButton.disabled = true;
-  loginButton.textContent = "Memproses...";
-
-  try{
-
-    const { data, error } =
-      await supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
-
-    if(error){
-
-      showLoginError(
-        "Email atau password salah. Silakan periksa kembali."
-      );
-
-      return;
-    }
-
-    if(!data.user){
-
-      showLoginError(
-        "Akun tidak ditemukan."
-      );
-
-      return;
-    }
-
-    const { data: profile, error: profileError } =
-      await supabaseClient
-        .from("profiles")
-        .select("id,nama,role")
-        .eq("id", data.user.id)
-        .maybeSingle();
-
-    if(profileError){
-
-      console.error(profileError);
-
-      await supabaseClient.auth.signOut();
-
-      showLoginError(
-        "Akun berhasil masuk, tetapi profil peserta belum ditemukan."
-      );
-
-      return;
-    }
-
-    if(!profile){
-
-      await supabaseClient.auth.signOut();
-
-      showLoginError(
-        "Profil peserta belum terdaftar. Hubungi admin."
-      );
-
-      return;
-    }
-
-    if(profile.role !== "peserta"){
-
-      await supabaseClient.auth.signOut();
-
-      showLoginError(
-        "Akun ini bukan akun peserta."
-      );
-
-      return;
-    }
-
-    loginPage.classList.add("hidden");
-    dashboard.classList.remove("hidden");
-
-    welcomeText.textContent =
-      "Halo, " + (profile.nama || "Peserta") + " 🌷";
-
-    await loadMaterials();
-
-  }catch(error){
-
-    console.error(error);
-
-    showLoginError(
-      "Terjadi kesalahan koneksi. Silakan coba lagi."
-    );
-
-  }finally{
-
-    loginButton.disabled = false;
-    loginButton.textContent = "Masuk";
-
-  }
-
+ profile=p.data;
+ masukApp();
 }
 
-
-async function loadMaterials(){
-
-  materials.innerHTML =
-    '<div class="loading">Memuat materi...</div>';
-
-  dashboardError.style.display = "none";
-
-  try{
-
-    const { data, error } =
-      await supabaseClient
-        .from("materials")
-        .select("*")
-        .in("status",["published","coming_soon"])
-        .order("urutan",{ascending:true});
-
-    if(error){
-
-      console.error(error);
-
-      showDashboardError(
-        "Materi belum bisa dimuat. Silakan coba lagi."
-      );
-
-      materials.innerHTML = "";
-
-      return;
-    }
-
-    if(!data || data.length === 0){
-
-      materials.innerHTML = `
-        <div class="empty">
-          Belum ada materi yang tersedia.
-        </div>
-      `;
-
-      return;
-    }
-
-    materials.innerHTML =
-      data.map((item,index) => {
-
-        const isComingSoon =
-          item.status === "coming_soon";
-
-        const badgeClass =
-          isComingSoon ? "coming" : "published";
-
-        const badgeText =
-          isComingSoon
-            ? "⏳ Segera Hadir"
-            : "✓ Tersedia";
-
-        const video =
-          isComingSoon
-            ? ""
-            : youtubeEmbed(item.video_url);
-
-        const isiMateri =
-          isComingSoon
-            ? ""
-            : (
-              item.isi_materi
-                ? `
-                  <div class="material">
-                    <h3>📖 Materi</h3>
-                    <div>${formatText(item.isi_materi)}</div>
-                  </div>
-                `
-                : ""
-            );
-
-        const tugas =
-          isComingSoon
-            ? ""
-            : (
-              item.tugas
-                ? `
-                  <div class="task">
-                    <strong>📝 Tugas</strong>
-                    <div style="margin-top:8px;">
-                      ${formatText(item.tugas)}
-                    </div>
-                  </div>
-                `
-                : ""
-            );
-
-        const linkSetoran =
-          (!isComingSoon && item.link_setoran)
-            ? `
-              <a
-                class="link"
-                href="${escapeHTML(item.link_setoran)}"
-                target="_blank"
-                rel="noopener">
-                📤 Kumpulkan Tugas
-              </a>
-            `
-            : "";
-
-        const pdf =
-          (!isComingSoon && item.pdf_url)
-            ? `
-              <a
-                class="link"
-                href="${escapeHTML(item.pdf_url)}"
-                target="_blank"
-                rel="noopener"
-                style="margin-left:6px;">
-                📄 Buka PDF
-              </a>
-            `
-            : "";
-
-        return `
-          <article class="material">
-
-            <span class="badge ${badgeClass}">
-              ${badgeText}
-            </span>
-
-            <h2>
-              ${index + 1}. ${escapeHTML(item.judul)}
-            </h2>
-
-            ${
-              item.deskripsi
-                ? `
-                  <p>
-                    ${formatText(item.deskripsi)}
-                  </p>
-                `
-                : ""
-            }
-
-            ${
-              isComingSoon
-                ? `
-                  <div class="empty">
-                    Materi ini sedang dipersiapkan.
-                    <br>
-                    InsyaAllah segera tersedia 🌷
-                  </div>
-                `
-                : ""
-            }
-
-            ${video}
-
-            ${isiMateri}
-
-            ${tugas}
-
-            ${linkSetoran}
-
-            ${pdf}
-
-          </article>
-        `;
-
-      }).join("");
-
-  }catch(error){
-
-    console.error(error);
-
-    showDashboardError(
-      "Terjadi kesalahan saat mengambil materi."
-    );
-
-  }
-
+function masukApp(){
+ $("login").classList.add("hidden");
+ $("app").classList.remove("hidden");
+ $("welcome").textContent="Halo, "+(profile.nama||"Peserta")+" 🌷";
+ $("akunNama").textContent="Nama: "+(profile.nama||"Peserta");
+ load();
 }
 
+async function load(){
+ const r=await db.from("materials")
+  .select("*")
+  .in("status",["published","coming_soon"])
+  .order("urutan");
+
+ if(r.error){
+  $("materials").textContent="Materi belum dapat dimuat.";
+  return;
+ }
+
+ $("materials").innerHTML=r.data.map((m,i)=>{
+  const soon=m.status==="coming_soon";
+
+  let h='<article class="material">';
+  h+='<span class="badge '+(soon?"soon":"")+'">';
+  h+=soon?"⏳ SEGERA HADIR":"✓ TERSEDIA";
+  h+='</span>';
+  h+='<h2>'+(i+1)+'. '+esc(m.judul)+'</h2>';
+
+  if(m.deskripsi)
+   h+='<p>'+esc(m.deskripsi)+'</p>';
+
+  if(soon){
+   h+='<p class="small">Materi ini sedang dipersiapkan.<br>InsyaAllah segera tersedia 🌷</p>';
+  }else{
+   h+=video(m.video_url);
+
+   if(m.isi_materi)
+    h+='<div><h3>📖 Materi</h3><div class="small">'+
+     esc(m.isi_materi).replace(/\n/g,"<br>")+'</div></div>';
+
+   if(m.tugas)
+    h+='<div class="task"><b>📝 Tugas</b><br><br>'+
+     esc(m.tugas).replace(/\n/g,"<br>")+'</div>';
+
+   if(m.link_setoran)
+    h+='<a href="'+esc(m.link_setoran)+
+     '" target="_blank"><button>📤 KUMPULKAN TUGAS</button></a>';
+
+   if(m.pdf_url)
+    h+='<a href="'+esc(m.pdf_url)+
+     '" target="_blank"><button>📄 BUKA PDF</button></a>';
+  }
+
+  return h+'</article>';
+ }).join("");
+}
+
+function akun(){
+ $("akunBox").classList.toggle("hidden");
+}
+
+async function ubahEmail(){
+ const email=$("newEmail").value.trim();
+
+ if(!email){
+  msg("emailMsg","Masukkan email baru.");
+  return;
+ }
+
+ const r=await db.auth.updateUser({email:email});
+
+ if(r.error){
+  msg("emailMsg",r.error.message);
+  return;
+ }
+
+ msg("emailMsg",
+ "Permintaan perubahan email berhasil. Silakan cek email baru untuk konfirmasi.",
+ "success");
+}
+
+async function ubahPassword(){
+ const a=$("newPass").value;
+ const b=$("newPass2").value;
+
+ if(a.length<6){
+  msg("passMsg","Password minimal 6 karakter.");
+  return;
+ }
+
+ if(a!==b){
+  msg("passMsg","Password tidak sama.");
+  return;
+ }
+
+ const r=await db.auth.updateUser({password:a});
+
+ if(r.error){
+  msg("passMsg",r.error.message);
+  return;
+ }
+
+ $("newPass").value="";
+ $("newPass2").value="";
+
+ msg("passMsg","Password berhasil diubah 🌷","success");
+}
 
 async function logout(){
-
-  await supabaseClient.auth.signOut();
-
-  dashboard.classList.add("hidden");
-  loginPage.classList.remove("hidden");
-
-  document.getElementById("email").value = "";
-  document.getElementById("password").value = "";
-
-  materials.innerHTML = "";
-
+ await db.auth.signOut();
+ location.reload();
 }
 
+async function session(){
+ const r=await db.auth.getSession();
 
-loginButton.addEventListener(
-  "click",
-  login
-);
+ if(!r.data.session)return;
 
+ const p=await db.from("profiles")
+  .select("id,nama,role")
+  .eq("id",r.data.session.user.id)
+  .maybeSingle();
 
-logoutButton.addEventListener(
-  "click",
-  logout
-);
-
-
-document
-  .getElementById("password")
-  .addEventListener("keydown",function(event){
-
-    if(event.key === "Enter"){
-
-      login();
-
-    }
-
-  });
-
-
-async function checkSession(){
-
-  try{
-
-    const { data } =
-      await supabaseClient.auth.getSession();
-
-    if(data.session){
-
-      const { data: profile } =
-        await supabaseClient
-          .from("profiles")
-          .select("id,nama,role")
-          .eq("id",data.session.user.id)
-          .maybeSingle();
-
-      if(profile && profile.role === "peserta"){
-
-        loginPage.classList.add("hidden");
-        dashboard.classList.remove("hidden");
-
-        welcomeText.textContent =
-          "Halo, " + (profile.nama || "Peserta") + " 🌷";
-
-        await loadMaterials();
-
-      }else{
-
-        await supabaseClient.auth.signOut();
-
-      }
-
-    }
-
-  }catch(error){
-
-    console.error(error);
-
-  }
-
+ if(p.data&&p.data.role==="peserta"){
+  profile=p.data;
+  masukApp();
+ }else{
+  await db.auth.signOut();
+ }
 }
 
-
-checkSession();
-
+session();
 </script>
-
 </body>
 </html>

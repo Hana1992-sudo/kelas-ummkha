@@ -7,12 +7,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 body{font-family:Arial;background:#f7f3fb;margin:0;color:#302b38}
-.box{max-width:700px;margin:30px auto;padding:20px}
-.card{background:#fff;padding:20px;border-radius:16px;margin:15px 0}
-input,textarea,select,button{width:100%;box-sizing:border-box;padding:12px;margin:7px 0;border:1px solid #ddd;border-radius:9px}
+.box{max-width:760px;margin:auto;padding:20px}
+.card{background:white;padding:20px;border-radius:18px;margin:15px 0;box-shadow:0 2px 10px #ddd}
+input,textarea,select,button{width:100%;box-sizing:border-box;padding:12px;margin:6px 0;border:1px solid #ddd;border-radius:9px}
 button{background:#7b4fa3;color:white;border:0;font-weight:bold}
-.hide{display:none}
-.item{padding:12px;border:1px solid #ddd;border-radius:10px;margin:10px 0}
+.red{background:#c94b5c}.gray{background:#777}
+.hide{display:none}.item{border:1px solid #ddd;border-radius:12px;padding:15px;margin:12px 0}
+.actions{display:flex;gap:8px}.actions button{flex:1}
+h1,h2{color:#70408f}
 </style>
 </head>
 
@@ -24,30 +26,35 @@ button{background:#7b4fa3;color:white;border:0;font-weight:bold}
 <input id="email" type="email" placeholder="Email Admin">
 <input id="password" type="password" placeholder="Password">
 <button id="loginBtn">MASUK</button>
-<p id="msg"></p>
+<p id="loginMsg"></p>
 </div>
 
 <div id="adminBox" class="hide">
+
 <h1>Dashboard Admin 🌷</h1>
-<button id="logoutBtn">KELUAR</button>
+<button id="logoutBtn" class="gray">KELUAR</button>
 
 <div class="card">
-<h2>Tambah Materi</h2>
+<h2 id="formTitle">Tambah Materi</h2>
+
 <input id="urutan" type="number" placeholder="Urutan">
 <input id="judul" placeholder="Judul materi">
-<input id="slug" placeholder="Slug, contoh: materi-1">
+<input id="slug" placeholder="Slug, contoh: karakter-faceless">
 <textarea id="deskripsi" placeholder="Deskripsi"></textarea>
 <input id="video" placeholder="Link YouTube">
 <input id="pdf" placeholder="Link PDF">
 <textarea id="isi" placeholder="Isi materi"></textarea>
 <textarea id="tugas" placeholder="Tugas peserta"></textarea>
 <input id="setoran" placeholder="Link setoran">
+
 <select id="status">
 <option value="published">Published</option>
 <option value="coming_soon">Segera Hadir</option>
 <option value="draft">Draft</option>
 </select>
+
 <button id="saveBtn">SIMPAN MATERI</button>
+<button id="cancelBtn" class="gray hide">BATAL EDIT</button>
 <p id="hasil"></p>
 </div>
 
@@ -55,58 +62,55 @@ button{background:#7b4fa3;color:white;border:0;font-weight:bold}
 <h2>Daftar Materi</h2>
 <div id="list">Memuat...</div>
 </div>
-</div>
 
+</div>
 </div>
 
 <script>
-const SUPABASE_URL="https://sngesuutjswqsgqciogi.supabase.co";
-const SUPABASE_KEY="sb_publishable_L8MDEGxyBOsyx_LM9GOvaw_AWVP1GuE";
-const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const URL="https://sngesuutjswqsgqciogi.supabase.co";
+const KEY="sb_publishable_L8MDEGxyBOsyx_LM9GOvaw_AWVP1GuE";
+const db=supabase.createClient(URL,KEY);
 
-const $=id=>document.getElementById(id);
+let editId=null;
+
+const $=x=>document.getElementById(x);
 
 $("loginBtn").onclick=async()=>{
-  $("msg").textContent="Memproses...";
+  $("loginMsg").textContent="Memproses...";
 
   try{
-    const result=await Promise.race([
-      db.auth.signInWithPassword({
-        email:$("email").value.trim(),
-        password:$("password").value
-      }),
-      new Promise((_,reject)=>setTimeout(()=>reject(new Error("Koneksi Supabase terlalu lama. Coba refresh halaman.")),10000))
-    ]);
+    const r=await db.auth.signInWithPassword({
+      email:$("email").value.trim(),
+      password:$("password").value
+    });
 
-    if(result.error){
-      $("msg").textContent="Login gagal: "+result.error.message;
+    if(r.error){
+      $("loginMsg").textContent="Login gagal: "+r.error.message;
       return;
     }
 
-    const user=result.data.user;
-
-    const profile=await db.from("profiles")
+    const p=await db.from("profiles")
       .select("role,nama")
-      .eq("id",user.id)
+      .eq("id",r.data.user.id)
       .maybeSingle();
 
-    if(profile.error){
-      $("msg").textContent="Login berhasil, tetapi profil Admin tidak bisa dibaca: "+profile.error.message;
+    if(p.error){
+      $("loginMsg").textContent="Gagal membaca profil: "+p.error.message;
       return;
     }
 
-    if(!profile.data || profile.data.role!=="admin"){
-      $("msg").textContent="Akun berhasil login, tetapi belum memiliki akses Admin.";
+    if(!p.data||p.data.role!=="admin"){
+      $("loginMsg").textContent="Akun ini bukan Admin.";
       await db.auth.signOut();
       return;
     }
 
     $("loginBox").classList.add("hide");
     $("adminBox").classList.remove("hide");
-    loadMaterials();
+    load();
 
   }catch(e){
-    $("msg").textContent=e.message;
+    $("loginMsg").textContent=e.message;
   }
 };
 
@@ -115,48 +119,142 @@ $("logoutBtn").onclick=async()=>{
   location.reload();
 };
 
-async function loadMaterials(){
-  const r=await db.from("materials").select("*").order("urutan");
+async function load(){
+  const r=await db.from("materials")
+    .select("*")
+    .order("urutan");
 
   if(r.error){
-    $("list").textContent="Gagal memuat materi: "+r.error.message;
+    $("list").textContent="Gagal memuat: "+r.error.message;
     return;
   }
 
-  $("list").innerHTML=r.data.length
-    ? r.data.map(x=>`
-      <div class="item">
-      <b>${x.urutan}. ${x.judul}</b><br>
-      Status: ${x.status}
-      </div>`).join("")
-    : "Belum ada materi.";
+  if(!r.data.length){
+    $("list").textContent="Belum ada materi.";
+    return;
+  }
+
+  $("list").innerHTML=r.data.map(x=>`
+    <div class="item">
+      <b>${x.urutan}. ${x.judul}</b>
+      <br>Status: <b>${x.status}</b>
+      <br><small>${x.deskripsi||""}</small>
+
+      <div class="actions">
+        <button onclick="edit('${x.id}')">✏️ EDIT</button>
+        <button class="red" onclick="hapus('${x.id}')">🗑️ HAPUS</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+async function edit(id){
+  const r=await db.from("materials")
+    .select("*")
+    .eq("id",id)
+    .single();
+
+  if(r.error){
+    alert(r.error.message);
+    return;
+  }
+
+  const x=r.data;
+  editId=id;
+
+  $("urutan").value=x.urutan||"";
+  $("judul").value=x.judul||"";
+  $("slug").value=x.slug||"";
+  $("deskripsi").value=x.deskripsi||"";
+  $("video").value=x.video_url||"";
+  $("pdf").value=x.pdf_url||"";
+  $("isi").value=x.isi_materi||"";
+  $("tugas").value=x.tugas||"";
+  $("setoran").value=x.link_setoran||"";
+  $("status").value=x.status||"draft";
+
+  $("formTitle").textContent="Edit Materi ✏️";
+  $("saveBtn").textContent="UPDATE MATERI";
+  $("cancelBtn").classList.remove("hide");
+
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 
 $("saveBtn").onclick=async()=>{
-  $("hasil").textContent="Menyimpan...";
-
   const row={
     urutan:Number($("urutan").value),
-    judul:$("judul").value,
-    slug:$("slug").value,
+    judul:$("judul").value.trim(),
+    slug:$("slug").value.trim(),
     deskripsi:$("deskripsi").value,
     video_url:$("video").value,
     pdf_url:$("pdf").value,
     isi_materi:$("isi").value,
     tugas:$("tugas").value,
     link_setoran:$("setoran").value,
-    status:$("status").value
+    status:$("status").value,
+    updated_at:new Date().toISOString()
   };
 
-  const r=await db.from("materials").insert(row);
+  if(!row.judul||!row.urutan||!row.slug){
+    $("hasil").textContent="Judul, urutan, dan slug wajib diisi.";
+    return;
+  }
+
+  $("hasil").textContent=editId?"Mengupdate...":"Menyimpan...";
+
+  let r;
+
+  if(editId){
+    r=await db.from("materials")
+      .update(row)
+      .eq("id",editId);
+  }else{
+    r=await db.from("materials").insert(row);
+  }
 
   if(r.error){
     $("hasil").textContent="Gagal: "+r.error.message;
-  }else{
-    $("hasil").textContent="Materi berhasil disimpan 🌷";
-    loadMaterials();
+    return;
   }
+
+  $("hasil").textContent=editId
+    ?"Materi berhasil diupdate 🌷"
+    :"Materi berhasil disimpan 🌷";
+
+  resetForm();
+  load();
 };
+
+$("cancelBtn").onclick=()=>{
+  resetForm();
+  $("hasil").textContent="";
+};
+
+function resetForm(){
+  editId=null;
+  ["urutan","judul","slug","deskripsi","video","pdf","isi","tugas","setoran"]
+    .forEach(id=>$(id).value="");
+
+  $("status").value="published";
+  $("formTitle").textContent="Tambah Materi";
+  $("saveBtn").textContent="SIMPAN MATERI";
+  $("cancelBtn").classList.add("hide");
+}
+
+async function hapus(id){
+  if(!confirm("Yakin ingin menghapus materi ini?"))return;
+
+  const r=await db.from("materials")
+    .delete()
+    .eq("id",id);
+
+  if(r.error){
+    alert("Gagal menghapus: "+r.error.message);
+    return;
+  }
+
+  load();
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kelas UmmKha</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f7f3fb;
+  color:#302b38;
+}
+.wrap{
+  max-width:850px;
+  margin:auto;
+  padding:20px;
+}
+.card{
+  background:white;
+  border-radius:20px;
+  padding:22px;
+  margin:14px 0;
+  box-shadow:0 5px 25px #0001;
+}
+input,button{
+  width:100%;
+  box-sizing:border-box;
+  padding:13px;
+  margin-top:8px;
+  border-radius:12px;
+  border:1px solid #ddd;
+  font-size:15px;
+}
+button{
+  background:#8f7ab8;
+  color:white;
+  border:0;
+  font-weight:bold;
+}
+.hidden{display:none}
+.msg{
+  background:#eee5f8;
+  padding:12px;
+  border-radius:12px;
+  margin-top:12px;
+}
+.material{
+  border:1px solid #eee;
+  border-radius:16px;
+  padding:18px;
+  margin:12px 0;
+}
+.badge{
+  display:inline-block;
+  font-size:12px;
+  font-weight:bold;
+  padding:6px 10px;
+  border-radius:20px;
+  background:#e8f6ec;
+}
+.soon{background:#fff0d0}
+iframe{
+  width:100%;
+  aspect-ratio:16/9;
+  border:0;
+  border-radius:12px;
+  margin-top:12px;
+}
+a{
+  display:inline-block;
+  background:#8f7ab8;
+  color:white;
+  text-decoration:none;
+  padding:10px 14px;
+  border-radius:10px;
+  margin:6px 5px 0 0;
+}
+.small{
+  color:#777;
+  line-height:1.6;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+<section id="login" class="card">
+<h1>🌷 Kelas UmmKha</h1>
+<p class="small">Silakan masuk menggunakan akun peserta.</p>
+
+<label>Email</label>
+<input id="email" type="email" placeholder="Masukkan email">
+
+<label>Password</label>
+<input id="password" type="password" placeholder="Masukkan password">
+
+<button onclick="login()">Masuk</button>
+
+<div id="msg" class="msg hidden"></div>
+</section>
+
+
+<section id="app" class="hidden">
+
+<div class="card">
+<h1>🌷 Kelas UmmKha</h1>
+<div id="welcome" class="small"></div>
+<button onclick="logout()">Keluar</button>
+</div>
+
+<div class="card">
+<h2>📚 Materi Kelas</h2>
+<div id="materials">Memuat materi...</div>
+</div>
+
+</section>
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL =
+"https://sngesuutjswqsgqciogi.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_L8MDEGxyBOsyx_LM9GOvaw_AWVP1GuE";
+
+const sb = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+function showMsg(text){
+  const el=document.getElementById("msg");
+  el.textContent=text;
+  el.classList.remove("hidden");
+}
+
+
+function safe(text){
+  return String(text || "").replace(/[&<>"']/g,function(c){
+    return {
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    }[c];
+  });
+}
+
+
+function videoEmbed(url){
+
+  if(!url) return "";
+
+  try{
+
+    const u=new URL(url);
+    let id="";
+
+    if(u.hostname.includes("youtu.be")){
+      id=u.pathname.slice(1);
+    }
+
+    if(u.hostname.includes("youtube.com")){
+      id=u.searchParams.get("v") || "";
+    }
+
+    if(id){
+      return '<iframe src="https://www.youtube.com/embed/'
+      + safe(id)
+      + '" allowfullscreen></iframe>';
+    }
+
+  }catch(e){}
+
+  return '<a href="'+safe(url)+'" target="_blank">▶ Buka Video</a>';
+}
+
+
+async function login(){
+
+  const email=document
+    .getElementById("email")
+    .value
+    .trim();
+
+  const password=document
+    .getElementById("password")
+    .value;
+
+  if(!email || !password){
+    showMsg("Email dan password wajib diisi.");
+    return;
+  }
+
+  const result=await sb.auth.signInWithPassword({
+    email:email,
+    password:password
+  });
+
+  if(result.error){
+    showMsg("Login gagal. Periksa email dan password.");
+    return;
+  }
+
+  enterApp();
+}
+
+
+async function enterApp(){
+
+  const session=await sb.auth.getSession();
+
+  if(!session.data.session){
+    return;
+  }
+
+  const userId=session.data.session.user.id;
+
+  const profile=await sb
+    .from("profiles")
+    .select("nama,role")
+    .eq("id",userId)
+    .single();
+
+  if(profile.error || !profile.data){
+    await sb.auth.signOut();
+    showMsg("Profil peserta belum ditemukan.");
+    return;
+  }
+
+  if(profile.data.role!=="peserta"){
+    await sb.auth.signOut();
+    showMsg("Akun ini bukan akun peserta.");
+    return;
+  }
+
+  document
+    .getElementById("login")
+    .classList.add("hidden");
+
+  document
+    .getElementById("app")
+    .classList.remove("hidden");
+
+  document
+    .getElementById("welcome")
+    .textContent =
+    "Halo, "+(profile.data.nama || "Peserta")+" 🌷";
+
+  loadMaterials();
+}
+
+
+async function loadMaterials(){
+
+  const box=document.getElementById("materials");
+
+  const result=await sb
+    .from("materials")
+    .select("*")
+    .in("status",["published","coming_soon"])
+    .order("urutan",{ascending:true});
+
+  if(result.error){
+
+    box.innerHTML=
+      '<div class="msg">Materi belum dapat dimuat.</div>';
+
+    return;
+  }
+
+  if(!result.data.length){
+
+    box.innerHTML=
+      '<p class="small">Belum ada materi.</p>';
+
+    return;
+  }
+
+  box.innerHTML=result.data.map(function(m,index){
+
+    const comingSoon=m.status==="coming_soon";
+
+    let html=
+      '<article class="material">';
+
+    html+=
+      '<span class="badge '+(comingSoon?"soon":"")+'">'
+      +(comingSoon
+        ?"SEGERA HADIR"
+        :"MATERI "+(index+1))
+      +'</span>';
+
+    html+=
+      '<h3>'+safe(m.judul)+'</h3>';
+
+    html+=
+      '<p class="small">'+safe(m.deskripsi)+'</p>';
+
+    if(comingSoon){
+
+      html+=
+        '<p>⏳ Materi sedang dipersiapkan.</p>';
+
+    }else{
+
+      html+=videoEmbed(m.video_url);
+
+      if(m.isi_materi){
+
+        html+=
+          '<h3>📖 Materi</h3>'+
+          '<div class="small" style="white-space:pre-wrap">'+
+          safe(m.isi_materi)+
+          '</div>';
+      }
+
+      if(m.tugas){
+
+        html+=
+          '<h3>📝 Tugas</h3>'+
+          '<div class="small" style="white-space:pre-wrap">'+
+          safe(m.tugas)+
+          '</div>';
+      }
+
+      if(m.link_setoran){
+
+        html+=
+          '<a href="'+safe(m.link_setoran)+
+          '" target="_blank">📤 Kumpulkan Tugas</a>';
+      }
+
+      if(m.pdf_url){
+
+        html+=
+          '<a href="'+safe(m.pdf_url)+
+          '" target="_blank">📄 Buka PDF</a>';
+      }
+    }
+
+    html

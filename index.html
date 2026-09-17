@@ -4,278 +4,349 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Kelas UmmKha</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-body{margin:0;font-family:Arial;background:#f7f3fb;color:#302b38}
-.wrap{max-width:850px;margin:auto;padding:20px}
-.card{background:white;padding:20px;border-radius:18px;margin:15px 0;box-shadow:0 4px 18px #0001}
-input,button{width:100%;box-sizing:border-box;padding:13px;margin:6px 0;border-radius:10px;border:1px solid #ddd}
-button{background:#76519a;color:white;border:0;font-weight:bold}
-.secondary{background:#eee5f5;color:#76519a}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f7f3fb;
+  color:#302b38;
+}
+.wrap{
+  max-width:850px;
+  margin:auto;
+  padding:20px;
+}
+.card{
+  background:white;
+  padding:20px;
+  border-radius:18px;
+  margin:15px 0;
+  box-shadow:0 4px 18px #0001;
+}
+h1,h2,h3{margin-top:0}
+input,button{
+  width:100%;
+  box-sizing:border-box;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  margin:6px 0;
+  font-size:15px;
+}
+button{
+  background:#76519a;
+  color:white;
+  border:0;
+  font-weight:bold;
+  cursor:pointer;
+}
+button.secondary{
+  background:#eee5f8;
+  color:#76519a;
+}
 .hidden{display:none}
-.error{background:#fff0f0;color:#b42318;padding:10px;border-radius:10px;margin:8px 0}
-.success{background:#effbf3;color:#18794e;padding:10px;border-radius:10px;margin:8px 0}
-.material{border-top:1px solid #eee;padding-top:18px;margin-top:18px}
-.badge{display:inline-block;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:bold;background:#eee5f8;color:#76519a}
-.soon{background:#fff1d0;color:#996b00}
-.video{position:relative;padding-bottom:56.25%;margin:12px 0}
-.video iframe{position:absolute;width:100%;height:100%;border:0;border-radius:12px}
-.task{background:#faf7fd;border-left:4px solid #76519a;padding:14px;margin-top:12px;border-radius:8px}
-.small{color:#777;font-size:14px;line-height:1.6}
+.error{
+  background:#fff0f0;
+  color:#b42318;
+  padding:10px;
+  border-radius:10px;
+  margin:8px 0;
+}
+.success{
+  background:#eefaf0;
+  color:#18794e;
+  padding:10px;
+  border-radius:10px;
+  margin:8px 0;
+}
+.material{
+  border-top:1px solid #eee;
+  padding-top:18px;
+  margin-top:18px;
+}
+.badge{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:bold;
+  background:#eee5f8;
+  color:#76519a;
+}
+.soon{
+  background:#fff7d6;
+  color:#8a6500;
+}
+.video{
+  width:100%;
+  border-radius:12px;
+  margin-top:12px;
+  background:#000;
+  min-height:220px;
+}
+.video iframe{
+  width:100%;
+  height:420px;
+  border:0;
+  border-radius:12px;
+}
+.task{
+  background:#f7f0fc;
+  border-left:4px solid #76519a;
+  padding:14px;
+  margin-top:15px;
+  border-radius:8px;
+}
+.prompt{
+  background:#fff9e8;
+  border-left:4px solid #d6a62a;
+  padding:14px;
+  margin-top:15px;
+  border-radius:8px;
+  white-space:pre-wrap;
+}
+.small{
+  color:#666;
+  font-size:13px;
+}
+a{
+  color:#76519a;
+  font-weight:bold;
+}
+.topbar{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.topbar button{
+  width:auto;
+  flex:1;
+  min-width:130px;
+}
 </style>
 </head>
 
 <body>
+
 <div class="wrap">
 
-<section id="login" class="card">
-<h1>🌷 Kelas UmmKha</h1>
-<p class="small">Silakan masuk menggunakan akun peserta.</p>
-<input id="email" type="email" placeholder="Email peserta">
-<input id="password" type="password" placeholder="Password">
-<button onclick="login()">MASUK</button>
-<div id="loginMsg"></div>
-</section>
+  <!-- LOGIN -->
+  <div id="login" class="card">
+    <h1>Kelas UmmKha</h1>
+    <p class="small">Silakan masuk menggunakan akun peserta.</p>
 
-<div id="app" class="hidden">
+    <input id="email" type="email" placeholder="Email peserta">
+    <input id="password" type="password" placeholder="Password">
 
-<section class="card">
-<h1>🌷 Kelas UmmKha</h1>
-<p id="welcome" class="small"></p>
-<button onclick="akun()">👤 Akun Saya</button>
-<button class="secondary" onclick="logout()">KELUAR</button>
-</section>
+    <button onclick="login()">MASUK</button>
 
-<section id="akunBox" class="card hidden">
-<h2>👤 Akun Saya</h2>
-<p id="akunNama" class="small"></p>
+    <div id="loginMsg"></div>
+  </div>
 
-<label>Email</label>
-<input id="newEmail" type="email" placeholder="Email baru">
-<button onclick="ubahEmail()">UBAH EMAIL</button>
-<div id="emailMsg"></div>
 
-<hr>
+  <!-- APLIKASI -->
+  <div id="app" class="hidden">
 
-<h3>🔐 Ganti Password</h3>
-<input id="newPass" type="password" placeholder="Password baru">
-<input id="newPass2" type="password" placeholder="Ulangi password baru">
-<button onclick="ubahPassword()">GANTI PASSWORD</button>
-<div id="passMsg"></div>
+    <div class="card">
+      <h1>Kelas UmmKha</h1>
 
-<button class="secondary" onclick="akun()">TUTUP</button>
-</section>
+      <p id="welcome" class="small"></p>
 
-<section class="card">
-<h2>📚 Materi Kelas</h2>
-<div id="materials">Memuat materi...</div>
-</section>
+      <div class="topbar">
+        <button onclick="showAccount()">👤 Akun Saya</button>
+        <button class="secondary" onclick="logout()">KELUAR</button>
+      </div>
+    </div>
+
+
+    <!-- AKUN -->
+    <div id="accountBox" class="card hidden">
+      <h2>👤 Akun Saya</h2>
+
+      <p class="small">Email saat ini</p>
+      <p id="currentEmail"></p>
+
+      <hr>
+
+      <h3>Ganti Email</h3>
+      <input id="newEmail" type="email" placeholder="Email baru">
+      <button onclick="changeEmail()">UBAH EMAIL</button>
+      <div id="emailMsg"></div>
+
+      <hr>
+
+      <h3>Ganti Password</h3>
+      <input id="newPass" type="password" placeholder="Password baru">
+      <button onclick="changePassword()">GANTI PASSWORD</button>
+      <div id="passMsg"></div>
+
+      <button class="secondary" onclick="hideAccount()">TUTUP</button>
+    </div>
+
+
+    <!-- MATERI -->
+    <div class="card">
+      <h2>📚 Materi Kelas</h2>
+      <div id="materials">Memuat materi...</div>
+    </div>
+
+  </div>
 
 </div>
-</div>
+
 
 <script>
-const db=supabase.createClient(
-"https://sngesuutjswqsgqciogi.supabase.co",
-"sb_publishable_L8MDEGxyBOsyx_LM9GOvaw_AWVP1GuE"
-);
 
-let profile=null;
+const SUPABASE_URL =
+  "https://sngesuutjswqsgqciogi.supabase.co";
 
-const $=id=>document.getElementById(id);
+const SUPABASE_KEY =
+  "sb_publishable_L8MDEGxyBOsyx_LM9GOvaw_AWVP1GuE";
 
-function msg(id,text,type="error"){
- $(id).innerHTML='<div class="'+type+'">'+text+'</div>';
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+/* =========================
+   HELPER
+========================= */
+
+function esc(value){
+  if(value === null || value === undefined) return "";
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 }
 
-function esc(x){
- return String(x||"").replace(/[&<>"']/g,c=>({
- "&":"&amp;","<":"&lt;",">":"&gt;",
- '"':"&quot;","'":"&#039;"
- }[c]));
+function showMessage(id,text,type="error"){
+  const el=document.getElementById(id);
+  if(!el)return;
+
+  el.innerHTML =
+    '<div class="'+type+'">'+esc(text)+'</div>';
 }
 
-function video(url){
- if(!url)return"";
- try{
-  const u=new URL(url);
-  let id=u.hostname.includes("youtu.be")
-   ?u.pathname.slice(1)
-   :u.searchParams.get("v");
-  if(!id&&url.includes("/embed/"))
-   id=url.split("/embed/")[1].split("?")[0];
-  if(!id)return"";
-  return '<div class="video"><iframe src="https://www.youtube.com/embed/'+
-   esc(id)+'" allowfullscreen></iframe></div>';
- }catch(e){return""}
-}
+
+/* =========================
+   LOGIN
+========================= */
 
 async function login(){
- $("loginMsg").textContent="Memproses...";
 
- const r=await db.auth.signInWithPassword({
-  email:$("email").value.trim(),
-  password:$("password").value
- });
+  document.getElementById("loginMsg").innerHTML="";
 
- if(r.error){
-  msg("loginMsg","Email atau password salah.");
-  return;
- }
+  const email =
+    document.getElementById("email").value.trim();
 
- const p=await db.from("profiles")
-  .select("id,nama,role")
-  .eq("id",r.data.user.id)
-  .maybeSingle();
+  const password =
+    document.getElementById("password").value;
 
- if(p.error||!p.data){
-  await db.auth.signOut();
-  msg("loginMsg","Profil peserta belum ditemukan.");
-  return;
- }
-
- if(p.data.role!=="peserta"){
-  await db.auth.signOut();
-  msg("loginMsg","Akun ini bukan akun peserta.");
-  return;
- }
-
- profile=p.data;
- masukApp();
-}
-
-function masukApp(){
- $("login").classList.add("hidden");
- $("app").classList.remove("hidden");
- $("welcome").textContent="Halo, "+(profile.nama||"Peserta")+" 🌷";
- $("akunNama").textContent="Nama: "+(profile.nama||"Peserta");
- load();
-}
-
-async function load(){
- const r=await db.from("materials")
-  .select("*")
-  .in("status",["published","coming_soon"])
-  .order("urutan");
-
- if(r.error){
-  $("materials").textContent="Materi belum dapat dimuat.";
-  return;
- }
-
- $("materials").innerHTML=r.data.map((m,i)=>{
-  const soon=m.status==="coming_soon";
-
-  let h='<article class="material">';
-  h+='<span class="badge '+(soon?"soon":"")+'">';
-  h+=soon?"⏳ SEGERA HADIR":"✓ TERSEDIA";
-  h+='</span>';
-  h+='<h2>'+(i+1)+'. '+esc(m.judul)+'</h2>';
-
-  if(m.deskripsi)
-   h+='<p>'+esc(m.deskripsi)+'</p>';
-
-  if(soon){
-   h+='<p class="small">Materi ini sedang dipersiapkan.<br>InsyaAllah segera tersedia 🌷</p>';
-  }else{
-   h+=video(m.video_url);
-
-   if(m.isi_materi)
-    h+='<div><h3>📖 Materi</h3><div class="small">'+
-     esc(m.isi_materi).replace(/\n/g,"<br>")+'</div></div>';
-
-   if(m.tugas)
-    h+='<div class="task"><b>📝 Tugas</b><br><br>'+
-     esc(m.tugas).replace(/\n/g,"<br>")+'</div>';
-
-   if(m.link_setoran)
-    h+='<a href="'+esc(m.link_setoran)+
-     '" target="_blank"><button>📤 KUMPULKAN TUGAS</button></a>';
-
-   if(m.pdf_url)
-    h+='<a href="'+esc(m.pdf_url)+
-     '" target="_blank"><button>📄 BUKA PDF</button></a>';
+  if(!email || !password){
+    showMessage(
+      "loginMsg",
+      "Email dan password wajib diisi."
+    );
+    return;
   }
 
-  return h+'</article>';
- }).join("");
+  const {data,error} =
+    await supabaseClient.auth.signInWithPassword({
+      email:email,
+      password:password
+    });
+
+  if(error){
+    showMessage(
+      "loginMsg",
+      error.message
+    );
+    return;
+  }
+
+  await loadApp(data.user);
 }
 
-function akun(){
- $("akunBox").classList.toggle("hidden");
+
+/* =========================
+   LOAD APP
+========================= */
+
+async function loadApp(user){
+
+  document.getElementById("login")
+    .classList.add("hidden");
+
+  document.getElementById("app")
+    .classList.remove("hidden");
+
+  document.getElementById("currentEmail")
+    .textContent = user.email || "";
+
+  const {data:profile} =
+    await supabaseClient
+      .from("profiles")
+      .select("*")
+      .eq("id",user.id)
+      .maybeSingle();
+
+  const nama =
+    profile && profile.nama
+      ? profile.nama
+      : "Peserta";
+
+  document.getElementById("welcome")
+    .textContent =
+      "Assalamu'alaikum, "+nama+" 🌷";
+
+  await loadMaterials();
 }
 
-async function ubahEmail(){
- const email=$("newEmail").value.trim();
 
- if(!email){
-  msg("emailMsg","Masukkan email baru.");
-  return;
- }
+/* =========================
+   CEK SESSION
+========================= */
 
- const r=await db.auth.updateUser({email:email});
+async function checkSession(){
 
- if(r.error){
-  msg("emailMsg",r.error.message);
-  return;
- }
+  const {data} =
+    await supabaseClient.auth.getSession();
 
- msg("emailMsg",
- "Permintaan perubahan email berhasil. Silakan cek email baru untuk konfirmasi.",
- "success");
+  if(data.session){
+    await loadApp(data.session.user);
+  }
 }
 
-async function ubahPassword(){
- const a=$("newPass").value;
- const b=$("newPass2").value;
+checkSession();
 
- if(a.length<6){
-  msg("passMsg","Password minimal 6 karakter.");
-  return;
- }
 
- if(a!==b){
-  msg("passMsg","Password tidak sama.");
-  return;
- }
+/* =========================
+   LOAD MATERIALS
+========================= */
 
- const r=await db.auth.updateUser({password:a});
+async function loadMaterials(){
 
- if(r.error){
-  msg("passMsg",r.error.message);
-  return;
- }
+  const box =
+    document.getElementById("materials");
 
- $("newPass").value="";
- $("newPass2").value="";
+  box.innerHTML="Memuat materi...";
 
- msg("passMsg","Password berhasil diubah 🌷","success");
-}
+  const {data,error} =
+    await supabaseClient
+      .from("materials")
+      .select("*")
+      .in("status",["published","coming_soon"])
+      .order("urutan",{ascending:true});
 
-async function logout(){
- await db.auth.signOut();
- location.reload();
-}
-
-async function session(){
- const r=await db.auth.getSession();
-
- if(!r.data.session)return;
-
- const p=await db.from("profiles")
-  .select("id,nama,role")
-  .eq("id",r.data.session.user.id)
-  .maybeSingle();
-
- if(p.data&&p.data.role==="peserta"){
-  profile=p.data;
-  masukApp();
- }else{
-  await db.auth.signOut();
- }
-}
-
-session();
-</script>
-</body>
-</html>
+  if(error){
+    box.innerHTML =
+      '<div class="error">Gagal memuat materi: '+
+     

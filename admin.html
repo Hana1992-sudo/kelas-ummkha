@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Kelas UmmKha</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f7f3fb;
+  color:#302b38;
+}
+
+.wrap{
+  max-width:1000px;
+  margin:auto;
+  padding:20px;
+}
+
+.card{
+  background:#fff;
+  border-radius:20px;
+  padding:22px;
+  margin-bottom:18px;
+  box-shadow:0 5px 20px rgba(80,50,100,.08);
+}
+
+h1,h2,h3{margin-top:0}
+
+.logo{
+  text-align:center;
+  font-size:30px;
+  font-weight:bold;
+  color:#76519a;
+  margin-bottom:8px;
+}
+
+.sub{
+  text-align:center;
+  color:#777;
+  margin-bottom:25px;
+}
+
+input,textarea,select{
+  width:100%;
+  padding:13px;
+  margin-bottom:12px;
+  border:1px solid #ddd;
+  border-radius:11px;
+  font-size:15px;
+  font-family:inherit;
+}
+
+textarea{
+  min-height:120px;
+  resize:vertical;
+}
+
+button{
+  padding:13px 18px;
+  border:0;
+  border-radius:11px;
+  background:#76519a;
+  color:white;
+  font-size:15px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:hover{opacity:.9}
+
+button:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.secondary{
+  background:#eee5f5;
+  color:#76519a;
+}
+
+.danger{
+  background:#fbe8e8;
+  color:#b42318;
+}
+
+.logout{
+  float:right;
+}
+
+.hidden{display:none!important}
+
+.error{
+  display:none;
+  background:#fff0f0;
+  color:#b42318;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:15px;
+}
+
+.success{
+  display:none;
+  background:#f0fff5;
+  color:#18794e;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:15px;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-bottom:18px;
+}
+
+.stat{
+  background:#faf7fd;
+  border-radius:15px;
+  padding:18px;
+  text-align:center;
+}
+
+.stat-number{
+  display:block;
+  font-size:28px;
+  font-weight:bold;
+  color:#76519a;
+  margin-bottom:5px;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.material{
+  border:1px solid #e8e0ee;
+  border-radius:15px;
+  padding:18px;
+  margin-top:12px;
+}
+
+.material-title{
+  font-size:19px;
+  font-weight:bold;
+  margin-bottom:8px;
+}
+
+.badge{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+
+.published{
+  background:#eee5f8;
+  color:#76519a;
+}
+
+.coming{
+  background:#fff4d8;
+  color:#996b00;
+}
+
+.draft{
+  background:#eee;
+  color:#666;
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:15px;
+}
+
+.actions button{
+  flex:0 0 auto;
+}
+
+.small{
+  color:#777;
+  font-size:13px;
+}
+
+@media(max-width:650px){
+  .stats{
+    grid-template-columns:1fr;
+  }
+
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .logout{
+    float:none;
+    margin-bottom:15px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+<!-- LOGIN ADMIN -->
+<section id="loginPage" class="card">
+
+  <div class="logo">🌷 Admin Kelas UmmKha</div>
+
+  <div class="sub">
+    Panel khusus Admin UmmKha
+  </div>
+
+  <div id="loginError" class="error"></div>
+
+  <input
+    id="email"
+    type="email"
+    placeholder="Email Admin"
+    autocomplete="email"
+  >
+
+  <input
+    id="password"
+    type="password"
+    placeholder="Password Admin"
+    autocomplete="current-password"
+  >
+
+  <button id="loginButton" type="button">
+    Masuk sebagai Admin
+  </button>
+
+</section>
+
+
+<!-- DASHBOARD ADMIN -->
+<section id="adminPage" class="hidden">
+
+  <div class="card">
+
+    <button id="logoutButton" class="secondary logout" type="button">
+      Keluar
+    </button>
+
+    <h1>🌷 Admin Kelas UmmKha</h1>
+
+    <p class="small">
+      Kelola materi yang akan tampil otomatis di website peserta.
+    </p>
+
+  </div>
+
+
+  <!-- STATISTIK -->
+  <div class="stats">
+
+    <div class="stat">
+      <span id="totalCount" class="stat-number">0</span>
+      Total Materi
+    </div>
+
+    <div class="stat">
+      <span id="publishedCount" class="stat-number">0</span>
+      Published
+    </div>
+
+    <div class="stat">
+      <span id="comingCount" class="stat-number">0</span>
+      Segera Hadir
+    </div>
+
+  </div>
+
+
+  <!-- FORM -->
+  <div class="card">
+
+    <h2 id="formTitle">➕ Tambah Materi</h2>
+
+    <div id="formError" class="error"></div>
+    <div id="formSuccess" class="success"></div>
+
+    <input type="hidden" id="materialId">
+
+    <div class="form-grid">
+
+      <div>
+        <label>Urutan Materi</label>
+        <input
+          id="urutan"
+          type="number"
+          placeholder="Contoh: 1"
+        >
+      </div>
+
+      <div>
+        <label>Status</label>
+        <select id="status">
+          <option value="draft">Draft</option>
+          <option value="coming_soon">Segera Hadir</option>
+          <option value="published">Published</option>
+        </select>
+      </div>
+
+    </div>
+
+    <label>Judul Materi</label>
+
+    <input
+      id="judul"
+      type="text"
+      placeholder="Contoh: Membuat Karakter Faceless dengan AI"
+    >
+
+
+    <label>Slug</label>
+
+    <input
+      id="slug"
+      type="text"
+      placeholder="Contoh: karakter-faceless"
+    >
+
+
+    <label>Deskripsi</label>
+
+    <textarea
+      id="deskripsi"
+      placeholder="Deskripsi singkat materi..."
+    ></textarea>
+
+
+    <label>Link Video YouTube</label>
+
+    <input
+      id="video_url"
+      type="url"
+      placeholder="https://youtu.be/..."
+    >
+
+
+    <label>Link PDF</label>
+
+    <input
+      id="pdf_url"
+      type="url"
+      placeholder="https://..."
+    >
+
+
+    <label>Isi Materi</label>
+
+    <textarea
+      id="isi_materi"
+      placeholder="Tuliskan materi pembelajaran di sini..."
+    ></textarea>
+
+
+    <label>Tugas</label>
+
+    <textarea
+      id="tugas"
+      placeholder="Tuliskan tugas peserta di sini..."
+    ></textarea>
+
+
+    <label>Link Setoran Tugas</label>
+
+    <input
+      id="link_setoran"
+      type="url"
+      placeholder="https://..."
+    >
+
+
+    <label>Thumbnail URL</label>
+
+    <input
+      id="thumbnail_url"
+      type="url"
+      placeholder="https://..."
+    >
+
+
+    <div class="actions">
+
+      <button
+        id="saveButton"
+        type="button">
+        💾 Simpan Materi
+      </button>
+
+      <button
+        id="cancelButton"
+        type="button"
+        class="secondary hidden">
+        Batal Edit
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- DAFTAR MATERI -->
+  <div class="card">
+
+    <h2>📚 Daftar Materi</h2>
+
+    <div id="materials">
+      Memuat materi...
+    </div>
+
+  </div>
+
+</section>
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL =
+  "https://sngesuutjswqsgqciogi.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_L8MDEGxyBOsyx_LM9GOvaw_AWVP1GuE";
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+const loginPage =
+  document.getElementById("loginPage");
+
+const adminPage =
+  document.getElementById("adminPage");
+
+const loginButton =
+  document.getElementById("loginButton");
+
+const logoutButton =
+  document.getElementById("logoutButton");
+
+const loginError =
+  document.getElementById("loginError");
+
+const formError =
+  document.getElementById("formError");
+
+const formSuccess =
+  document.getElementById("formSuccess");
+
+const materials =
+  document.getElementById("materials");
+
+
+function showError(element,message){
+
+  element.textContent = message;
+  element.style.display = "block";
+
+}
+
+
+function hideMessage(element){
+
+  element.style.display = "none";
+
+}
+
+
+function clearForm(){
+
+  document.getElementById("materialId").value = "";
+  document.getElementById("urutan").value = "";
+  document.getElementById("status").value = "draft";
+  document.getElementById("judul").value = "";
+  document.getElementById("slug").value = "";
+  document.getElementById("deskripsi").value = "";
+  document.getElementById("video_url").value = "";
+  document.getElementById("pdf_url").value = "";
+  document.getElementById("isi_materi").value = "";
+  document.getElementById("tugas").value = "";
+  document.getElementById("link_setoran").value = "";
+  document.getElementById("thumbnail_url").value = "";
+
+  document.getElementById("formTitle").textContent =
+    "➕ Tambah Materi";
+
+  document.getElementById("cancelButton")
+    .classList.add("hidden");
+
+}
+
+
+async function checkAdmin(userId){
+
+  const { data, error } =
+    await supabaseClient
+      .from("profiles")
+      .select("id,nama,role")
+      .eq("id",userId)
+      .maybeSingle();
+
+  if(error){
+
+    console.error(error);
+    return null;
+
+  }
+
+  if(!data || data.role !== "admin"){
+
+    return null;
+
+  }
+
+  return data;
+
+}
+
+
+async function login(){
+
+  hideMessage(loginError);
+
+  const

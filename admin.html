@@ -4,17 +4,77 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Admin UmmKha</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-body{font-family:Arial;background:#f7f3fb;padding:20px}
-main{max-width:700px;margin:auto}
-section{background:white;padding:18px;border-radius:15px;margin:15px 0}
-input,textarea,select,button{width:100%;box-sizing:border-box;padding:11px;margin:5px 0;border-radius:8px;border:1px solid #ddd}
-button{background:#79509b;color:white;border:0;font-weight:bold}
-.hide{display:none}
-.item{border:1px solid #ddd;padding:12px;margin:10px 0;border-radius:10px}
-.red{background:#c44}
+body{
+  font-family:Arial,sans-serif;
+  background:#f7f3fb;
+  padding:20px;
+  margin:0;
+}
+
+main{
+  max-width:700px;
+  margin:auto;
+}
+
+section{
+  background:white;
+  padding:18px;
+  border-radius:15px;
+  margin:15px 0;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+
+input,textarea,select,button{
+  width:100%;
+  box-sizing:border-box;
+  padding:11px;
+  margin:6px 0;
+  border-radius:8px;
+  border:1px solid #ddd;
+  font-size:14px;
+}
+
+textarea{
+  min-height:110px;
+  resize:vertical;
+}
+
+button{
+  background:#79509b;
+  color:white;
+  border:0;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:hover{
+  opacity:.9;
+}
+
+.hide{
+  display:none;
+}
+
+.item{
+  border:1px solid #ddd;
+  padding:12px;
+  margin:10px 0;
+  border-radius:10px;
+  background:#fff;
+}
+
+.red{
+  background:#c44;
+}
+
+#pesan,#hasil{
+  color:#79509b;
+  font-weight:bold;
+}
 </style>
 </head>
 
@@ -22,70 +82,124 @@ button{background:#79509b;color:white;border:0;font-weight:bold}
 
 <main>
 
+<!-- LOGIN -->
 <section id="login">
-<h2>Admin Kelas UmmKha 🌷</h2>
+  <h2>Admin Kelas UmmKha 🌷</h2>
 
-<input id="email" placeholder="Email Admin">
-<input id="pass" type="password" placeholder="Password">
+  <input
+    id="email"
+    type="email"
+    placeholder="Email Admin"
+  >
 
-<button onclick="masuk()">MASUK</button>
+  <input
+    id="pass"
+    type="password"
+    placeholder="Password"
+  >
 
-<p id="pesan"></p>
+  <button onclick="masuk()">MASUK</button>
+
+  <p id="pesan"></p>
 </section>
 
 
+<!-- DASHBOARD -->
 <div id="app" class="hide">
 
 <section>
-<h2>Dashboard Admin</h2>
-<button onclick="keluar()">KELUAR</button>
+  <h2>Dashboard Admin</h2>
+
+  <button onclick="keluar()">KELUAR</button>
 </section>
 
 
+<!-- FORM MATERI -->
 <section>
 
-<h3 id="judulForm">Tambah Materi</h3>
+  <h3 id="judulForm">Tambah Materi</h3>
 
-<input id="urut" type="number" placeholder="Urutan">
+  <input
+    id="urut"
+    type="number"
+    placeholder="Urutan"
+  >
 
-<input id="judul" placeholder="Judul materi">
+  <input
+    id="judul"
+    placeholder="Judul materi"
+  >
 
-<input id="slug" placeholder="Slug">
+  <input
+    id="slug"
+    placeholder="Slug"
+  >
 
-<textarea id="desc" placeholder="Deskripsi"></textarea>
+  <textarea
+    id="desc"
+    placeholder="Deskripsi"
+  ></textarea>
 
-<input id="video" placeholder="Link YouTube">
+  <input
+    id="video"
+    placeholder="Link YouTube"
+  >
 
-<input id="pdf" placeholder="Link PDF">
+  <input
+    id="pdf"
+    placeholder="Link PDF"
+  >
 
-<textarea id="isi" placeholder="Isi materi"></textarea>
+  <textarea
+    id="isi"
+    placeholder="Isi materi"
+  ></textarea>
 
-<textarea id="prompt" placeholder="📋 Prompt Materi"></textarea>
+  <!-- PROMPT BARU -->
+  <textarea
+    id="prompt"
+    placeholder="📋 Prompt Materi"
+  ></textarea>
 
-<textarea id="tugas" placeholder="Tugas"></textarea>
+  <textarea
+    id="tugas"
+    placeholder="Tugas peserta"
+  ></textarea>
 
-<input id="setoran" placeholder="Link setoran">
+  <input
+    id="setoran"
+    placeholder="Link setoran"
+  >
 
-<select id="status">
-<option value="published">Published</option>
-<option value="coming_soon">Segera Hadir</option>
-<option value="draft">Draft</option>
-</select>
+  <select id="status">
+    <option value="published">Published</option>
+    <option value="coming_soon">Segera Hadir</option>
+    <option value="draft">Draft</option>
+  </select>
 
-<button onclick="simpan()">SIMPAN</button>
+  <button onclick="simpan()">SIMPAN</button>
 
-<button id="batal" class="hide" onclick="reset()">BATAL EDIT</button>
+  <button
+    id="batal"
+    class="hide"
+    onclick="reset()"
+  >
+    BATAL EDIT
+  </button>
 
-<p id="hasil"></p>
+  <p id="hasil"></p>
 
 </section>
 
 
+<!-- DAFTAR MATERI -->
 <section>
 
-<h3>Daftar Materi</h3>
+  <h3>Daftar Materi</h3>
 
-<div id="daftar">Memuat...</div>
+  <div id="daftar">
+    Memuat...
+  </div>
 
 </section>
 
@@ -96,232 +210,39 @@ button{background:#79509b;color:white;border:0;font-weight:bold}
 
 <script>
 
-const db=supabase.createClient(
-"https://sngesuutjswqsgqciogi.supabase.co",
-"sb_publishable_L8MDEGxyBOsyx_LM9GOvaw_AWVP1GuE"
+const db = window.supabase.createClient(
+  "https://sngesuutjswqsgqciogi.supabase.co",
+  "sb_publishable_L8MDEGxyBOsyx_LM9GOvaw_AWVP1GuE"
 );
 
-let editId=null;
+let editId = null;
 
-const $=id=>document.getElementById(id);
+const $ = id => document.getElementById(id);
 
+
+/* =========================
+   LOGIN ADMIN
+========================= */
 
 async function masuk(){
 
-$("pesan").textContent="Memproses...";
-
-const r=await db.auth.signInWithPassword({
-email:$("email").value.trim(),
-password:$("pass").value
-});
-
-if(r.error){
-$("pesan").textContent=r.error.message;
-return;
-}
-
-const p=await db
-.from("profiles")
-.select("role")
-.eq("id",r.data.user.id)
-.maybeSingle();
-
-if(p.error||!p.data||p.data.role!="admin"){
-
-$("pesan").textContent="Akun bukan Admin.";
-
-await db.auth.signOut();
-
-return;
-}
-
-$("login").classList.add("hide");
-$("app").classList.remove("hide");
-
-muat();
-
-}
-
-
-async function keluar(){
-
-await db.auth.signOut();
-
-location.reload();
-
-}
-
-
-async function muat(){
-
-const r=await db
-.from("materials")
-.select("*")
-.order("urutan");
-
-if(r.error){
-
-$("daftar").textContent=r.error.message;
-
-return;
-}
-
-$("daftar").innerHTML=r.data.map(x=>`
-
-<div class="item">
-
-<b>${x.urutan}. ${x.judul}</b><br>
-
-Status: ${x.status}
-
-<button onclick="edit('${x.id}')">EDIT</button>
-
-<button class="red" onclick="hapus('${x.id}')">HAPUS</button>
-
-</div>
-
-`).join("");
-
-}
-
-
-async function edit(id){
-
-const r=await db
-.from("materials")
-.select("*")
-.eq("id",id)
-.single();
-
-if(r.error){
-
-alert(r.error.message);
-
-return;
-}
-
-const x=r.data;
-
-editId=id;
-
-$("urut").value=x.urutan||"";
-$("judul").value=x.judul||"";
-$("slug").value=x.slug||"";
-$("desc").value=x.deskripsi||"";
-$("video").value=x.video_url||"";
-$("pdf").value=x.pdf_url||"";
-$("isi").value=x.isi_materi||"";
-$("prompt").value=x.prompt||"";
-$("tugas").value=x.tugas||"";
-$("setoran").value=x.link_setoran||"";
-$("status").value=x.status||"draft";
-
-$("judulForm").textContent="Edit Materi";
-
-$("batal").classList.remove("hide");
-
-window.scrollTo(0,0);
-
-}
-
-
-async function simpan(){
-
-const row={
-
-urutan:+$("urut").value,
-
-judul:$("judul").value,
-
-slug:$("slug").value,
-
-deskripsi:$("desc").value,
-
-video_url:$("video").value,
-
-pdf_url:$("pdf").value,
-
-isi_materi:$("isi").value,
-
-prompt:$("prompt").value,
-
-tugas:$("tugas").value,
-
-link_setoran:$("setoran").value,
-
-status:$("status").value,
-
-updated_at:new Date().toISOString()
-
-};
-
-let r=editId
-?await db.from("materials").update(row).eq("id",editId)
-:await db.from("materials").insert(row);
-
-if(r.error){
-
-$("hasil").textContent="Gagal: "+r.error.message;
-
-return;
-}
-
-$("hasil").textContent="Berhasil disimpan 🌷";
-
-reset();
-
-muat();
-
-}
-
-
-async function hapus(id){
-
-if(!confirm("Hapus materi ini?"))return;
-
-const r=await db
-.from("materials")
-.delete()
-.eq("id",id);
-
-if(r.error){
-
-alert(r.error.message);
-
-return;
-}
-
-muat();
-
-}
-
-
-function reset(){
-
-editId=null;
-
-[
-"urut",
-"judul",
-"slug",
-"desc",
-"video",
-"pdf",
-"isi",
-"prompt",
-"tugas",
-"setoran"
-].forEach(x=>$(x).value="");
-
-$("status").value="published";
-
-$("judulForm").textContent="Tambah Materi";
-
-$("batal").classList.add("hide");
-
-}
-
-</script>
-
-</body>
-</html>
+  $("pesan").textContent = "Memproses...";
+
+  const r = await db.auth.signInWithPassword({
+    email: $("email").value.trim(),
+    password: $("pass").value
+  });
+
+  if(r.error){
+    $("pesan").textContent = r.error.message;
+    return;
+  }
+
+  const p = await db
+    .from("profiles")
+    .select("role")
+    .eq("id", r.data.user.id)
+    .maybeSingle();
+
+  if(
+    p.error

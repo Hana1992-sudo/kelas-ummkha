@@ -8,47 +8,46 @@
 <style>
 body{font-family:Arial;background:#f7f3fb;margin:0;color:#302b38}
 .box{max-width:700px;margin:30px auto;padding:20px}
-.card{background:white;padding:20px;border-radius:16px;margin:15px 0;box-shadow:0 3px 12px #ddd}
-input,textarea,select,button{width:100%;padding:12px;margin:7px 0;border:1px solid #ddd;border-radius:9px;box-sizing:border-box}
+.card{background:#fff;padding:20px;border-radius:16px;margin:15px 0}
+input,textarea,select,button{width:100%;box-sizing:border-box;padding:12px;margin:7px 0;border:1px solid #ddd;border-radius:9px}
 button{background:#7b4fa3;color:white;border:0;font-weight:bold}
-h1{color:#70408f}
 .hide{display:none}
-.item{border:1px solid #ddd;padding:12px;border-radius:10px;margin:10px 0}
+.item{padding:12px;border:1px solid #ddd;border-radius:10px;margin:10px 0}
 </style>
 </head>
 
 <body>
 <div class="box">
 
-<div id="login" class="card">
+<div id="loginBox" class="card">
 <h1>Admin Kelas UmmKha 🌷</h1>
 <input id="email" type="email" placeholder="Email Admin">
 <input id="password" type="password" placeholder="Password">
-<button onclick="login()">MASUK</button>
+<button id="loginBtn">MASUK</button>
 <p id="msg"></p>
 </div>
 
-<div id="panel" class="hide">
+<div id="adminBox" class="hide">
 <h1>Dashboard Admin 🌷</h1>
-<button onclick="logout()">Keluar</button>
+<button id="logoutBtn">KELUAR</button>
 
 <div class="card">
 <h2>Tambah Materi</h2>
-<input id="judul" placeholder="Judul materi">
 <input id="urutan" type="number" placeholder="Urutan">
-<input id="slug" placeholder="Slug, contoh: karakter-faceless">
+<input id="judul" placeholder="Judul materi">
+<input id="slug" placeholder="Slug, contoh: materi-1">
 <textarea id="deskripsi" placeholder="Deskripsi"></textarea>
-<input id="video" placeholder="Link video YouTube">
+<input id="video" placeholder="Link YouTube">
 <input id="pdf" placeholder="Link PDF">
 <textarea id="isi" placeholder="Isi materi"></textarea>
 <textarea id="tugas" placeholder="Tugas peserta"></textarea>
-<input id="setoran" placeholder="Link setoran tugas">
+<input id="setoran" placeholder="Link setoran">
 <select id="status">
 <option value="published">Published</option>
 <option value="coming_soon">Segera Hadir</option>
 <option value="draft">Draft</option>
 </select>
-<button onclick="simpan()">SIMPAN MATERI</button>
+<button id="saveBtn">SIMPAN MATERI</button>
 <p id="hasil"></p>
 </div>
 
@@ -61,79 +60,103 @@ h1{color:#70408f}
 </div>
 
 <script>
-const URL="https://sngesuutjswqsgqciogi.supabase.co";
-const KEY="sb_publishable_L8MDEGxyBOsyx_LM9GOvaw_AWVP1GuE";
-const db=supabase.createClient(URL,KEY);
+const SUPABASE_URL="https://sngesuutjswqsgqciogi.supabase.co";
+const SUPABASE_KEY="sb_publishable_L8MDEGxyBOsyx_LM9GOvaw_AWVP1GuE";
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-async function login(){
-msg.textContent="Memproses...";
-const {data,error}=await db.auth.signInWithPassword({
-email:email.value,password:password.value
-});
-if(error){msg.textContent=error.message;return}
+const $=id=>document.getElementById(id);
 
-const {data:p,error:e}=await db.from("profiles")
-.select("role,nama").eq("id",data.user.id).single();
+$("loginBtn").onclick=async()=>{
+  $("msg").textContent="Memproses...";
 
-if(e||!p||p.role!=="admin"){
-await db.auth.signOut();
-msg.textContent="Akun ini bukan Admin.";
-return;
-}
-loginBox();
-}
+  try{
+    const result=await Promise.race([
+      db.auth.signInWithPassword({
+        email:$("email").value.trim(),
+        password:$("password").value
+      }),
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error("Koneksi Supabase terlalu lama. Coba refresh halaman.")),10000))
+    ]);
 
-function loginBox(){
-login.classList.add("hide");
-panel.classList.remove("hide");
-load();
-}
+    if(result.error){
+      $("msg").textContent="Login gagal: "+result.error.message;
+      return;
+    }
 
-async function logout(){
-await db.auth.signOut();
-location.reload();
-}
+    const user=result.data.user;
 
-async function load(){
-const {data,error}=await db.from("materials")
-.select("*").order("urutan");
+    const profile=await db.from("profiles")
+      .select("role,nama")
+      .eq("id",user.id)
+      .maybeSingle();
 
-if(error){list.innerHTML="Gagal memuat: "+error.message;return}
+    if(profile.error){
+      $("msg").textContent="Login berhasil, tetapi profil Admin tidak bisa dibaca: "+profile.error.message;
+      return;
+    }
 
-list.innerHTML="";
-data.forEach(x=>{
-list.innerHTML+=`
-<div class="item">
-<b>${x.urutan}. ${x.judul}</b><br>
-Status: ${x.status}<br>
-<small>${x.deskripsi||""}</small>
-</div>`;
-});
-}
+    if(!profile.data || profile.data.role!=="admin"){
+      $("msg").textContent="Akun berhasil login, tetapi belum memiliki akses Admin.";
+      await db.auth.signOut();
+      return;
+    }
 
-async function simpan(){
-const row={
-urutan:Number(urutan.value),
-judul:judul.value,
-slug:slug.value,
-deskripsi:deskripsi.value,
-video_url:video.value,
-pdf_url:pdf.value,
-isi_materi:isi.value,
-tugas:tugas.value,
-link_setoran:setoran.value,
-status:status.value
+    $("loginBox").classList.add("hide");
+    $("adminBox").classList.remove("hide");
+    loadMaterials();
+
+  }catch(e){
+    $("msg").textContent=e.message;
+  }
 };
 
-const {error}=await db.from("materials").insert(row);
+$("logoutBtn").onclick=async()=>{
+  await db.auth.signOut();
+  location.reload();
+};
 
-if(error){
-hasil.textContent="Gagal: "+error.message;
-}else{
-hasil.textContent="Materi berhasil disimpan 🌷";
-load();
+async function loadMaterials(){
+  const r=await db.from("materials").select("*").order("urutan");
+
+  if(r.error){
+    $("list").textContent="Gagal memuat materi: "+r.error.message;
+    return;
+  }
+
+  $("list").innerHTML=r.data.length
+    ? r.data.map(x=>`
+      <div class="item">
+      <b>${x.urutan}. ${x.judul}</b><br>
+      Status: ${x.status}
+      </div>`).join("")
+    : "Belum ada materi.";
 }
-}
+
+$("saveBtn").onclick=async()=>{
+  $("hasil").textContent="Menyimpan...";
+
+  const row={
+    urutan:Number($("urutan").value),
+    judul:$("judul").value,
+    slug:$("slug").value,
+    deskripsi:$("deskripsi").value,
+    video_url:$("video").value,
+    pdf_url:$("pdf").value,
+    isi_materi:$("isi").value,
+    tugas:$("tugas").value,
+    link_setoran:$("setoran").value,
+    status:$("status").value
+  };
+
+  const r=await db.from("materials").insert(row);
+
+  if(r.error){
+    $("hasil").textContent="Gagal: "+r.error.message;
+  }else{
+    $("hasil").textContent="Materi berhasil disimpan 🌷";
+    loadMaterials();
+  }
+};
 </script>
 </body>
 </html>
